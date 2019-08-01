@@ -8,7 +8,6 @@ import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import Particles from 'react-particles-js';
 import './App.css';
-import Clarifai from 'clarifai';
 
 const particlesOptions = {
                 particles: {
@@ -54,10 +53,6 @@ const particlesOptions = {
       "retina_detect": true
   }
 
-  const app = new Clarifai.App({
-    apiKey: 'b4112a015f24487ca28158b1dec6efe8'
-   });
-
 const initialState = {
     input: '',
     imageUrl: '',
@@ -77,7 +72,7 @@ class App extends Component {
         super();
         this.state = initialState;
         }
-    }
+    
 
     loadUser = (data) => {
         this.setState({ user: {
@@ -121,10 +116,16 @@ class App extends Component {
 
     onPictureSubmit = () => {
         this.setState({imageUrl: this.state.input});
-        app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input )
+        fetch('http://apiher1.patelmeet.ca/imageURL', {
+            method: 'post',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                input: this.state.input
+            })
+        })
         .then (response => {
             if(response){
-                fetch('http://localhost:3000/image', {
+                fetch('http://apiher1.patelmeet.ca/image', {
                     method: 'put',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -143,27 +144,27 @@ class App extends Component {
     }
   render() {
       const { isSignedIn, imageUrl, route, box } = this.state;
-    return (
-      <div className="App">
-        <Particles className='particles'
-                params={particlesOptions} />
-        <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
-        {
-            route === 'home'
-            ? <div> 
-                <Logo />
-                <Rank name={this.state.user.name} entries={this.state.user.entries}/>
-                <ImageLinkForm onInputChange={this.onInputChange} onPictureSubmit={this.onPictureSubmit}/>
-                <FaceRecognition imageUrl={imageUrl} box={box} />
-            </div>
-            : ( route === 'signin' 
-                ? <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange}/> 
-                : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
-            )
-        }
-      </div>
-    );
-  }
+        return (
+        <div className="App">
+            <Particles className='particles'
+                    params={particlesOptions} />
+            <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange} />
+            {
+                route === 'home'
+                ? <div> 
+                    <Logo />
+                    <Rank name={this.state.user.name} entries={this.state.user.entries}/>
+                    <ImageLinkForm onInputChange={this.onInputChange} onPictureSubmit={this.onPictureSubmit}/>
+                    <FaceRecognition imageUrl={imageUrl} box={box} />
+                </div>
+                : ( route === 'signin' 
+                    ? <Signin loadUser={this.loadUser} onRouteChange={this.onRouteChange}/> 
+                    : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
+                )
+            }
+        </div>
+        );
+    }
 }
 
 export default App;
